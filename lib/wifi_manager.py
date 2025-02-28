@@ -21,31 +21,38 @@ class WiFiManager:
             return False
 
         def wifi_thread():
-            wlan = network.WLAN(network.STA_IF)
-            wlan.active(True)
+            try:
+                wlan = network.WLAN(network.STA_IF)
+                wlan.active(True)
 
-            if not wlan.isconnected():
-                print(f"Connecting to WiFi: {ssid} with password: {password}")
-                wlan.connect(ssid, password)
-                timeout = 10
-                start_time = time.time()
+                if not wlan.isconnected():
+                    print(f"Connecting to WiFi: {ssid}")
+                    wlan.connect(ssid, password)
+                    timeout = 10
+                    start_time = time.time()
 
-                while not wlan.isconnected():
-                    if time.time() - start_time > timeout:
-                        print("Failed to connect to WiFi")
-                        self.is_connected = False
-                        self.wifi_disconnected_icon.draw(self.display)
-                        self.thread_active = False
-                        return
-                    time.sleep(1)
+                    while not wlan.isconnected():
+                        if time.time() - start_time > timeout:
+                            print("Failed to connect to WiFi")
+                            self.is_connected = False
+                            self.wifi_disconnected_icon.draw(self.display)
+                            self.thread_active = False
+                            return
+                        time.sleep(1)
 
-            if wlan.isconnected():
-                print("Connected to WiFi! IP:", wlan.ifconfig()[0])
-                self.is_connected = True
-                self.wifi_disconnected_icon.erase(self.display)
-                self.wifi_connected_icon.draw(self.display)
+                if wlan.isconnected():
+                    print("Connected to WiFi! IP:", wlan.ifconfig()[0])
+                    self.is_connected = True
+                    self.wifi_disconnected_icon.erase(self.display)
+                    self.wifi_connected_icon.draw(self.display)
 
-            self.thread_active = False
+                self.thread_active = False
+                
+            except Exception as e:
+                print(f"WiFi error: {e}")
+                self.is_connected = False
+                self.wifi_disconnected_icon.draw(self.display)
+                self.thread_active = False
 
         if not self.thread_active:
             self.thread_active = True

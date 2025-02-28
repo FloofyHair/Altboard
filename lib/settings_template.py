@@ -1,4 +1,8 @@
-def get_settings_html(network_options):
+def get_settings_html(network_options, nvs):
+    # Retrieve saved SSID and password from NVS
+    saved_ssid = nvs.get_string("ssid", "")
+    saved_password = nvs.get_string("pass", "")
+
     return f"""
     <!DOCTYPE html>
     <html>
@@ -103,7 +107,7 @@ def get_settings_html(network_options):
 
           <div id="password">
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" />
+            <input type="password" id="password" name="password" value="{saved_password}" />
           </div>
 
           <div class="line-container">
@@ -119,6 +123,58 @@ def get_settings_html(network_options):
 
           <button type="submit" id="submit-button">Submit</button>
         </form>
+      </body>
+    </html>
+    """
+
+def get_updated_html():
+    return f"""
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>Settings Updated</title>
+        <style>
+          body {{
+            background-color: #111;
+            color: #fff;
+            font-family: "Times New Roman", Times, serif;
+            font-size: 24px;
+            position: relative;
+            min-height: 100vh;
+            margin: 0;
+            padding-bottom: 60px;
+          }}
+
+          h1 {{
+            text-align: center;
+            margin-top: 50px;
+            font-weight: 100;
+            font-size: 32px;
+          }}
+
+          .message {{
+            text-align: center;
+            font-size: 24px;
+            margin: 20px;
+          }}
+
+          button {{
+            background-color: #151515;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-family: inherit;
+            font-size: 24px;
+            display: block;
+            margin: 0 auto;
+          }}
+        </style>
+      </head>
+      <body>
+        <h1>Settings Updated</h1>
+        <div class="message">Your Wi-Fi settings have been successfully updated.</div>
+        <button onclick="window.location.href='/settings'">Go Back to Settings</button>
       </body>
     </html>
     """ 

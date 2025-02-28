@@ -25,7 +25,9 @@ class SettingsState(State):
             return MainMenuState(self.display_driver, self.nvs)
         if button_id == "RIGHT":
             for label in self.labels: label.erase(self.display_driver)
-            if self.current_option == 0: return UpdateSettingsState(self.display_driver, self.nvs)
+            if self.current_option == 0: 
+                print("Creating UpdateSettingsState")
+                return UpdateSettingsState(self.display_driver, self.nvs)
         self.display()
         self.previous_option = self.current_option
         return self

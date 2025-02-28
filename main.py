@@ -11,6 +11,7 @@ class Application:
         self.display = DisplayDriver()
         self.display.backlight.on()
         self.display.init_display()
+        # self.display.fill_screen(0x0000)
         
         # Initialize NVS
         self.nvs = NVSManager()
@@ -44,4 +45,3 @@ if __name__ == "__main__":
             pass
     except KeyboardInterrupt as e:
         print(f"User requested exit. Goodbye! Error: {e}")
-    

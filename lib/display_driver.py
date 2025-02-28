@@ -193,6 +193,13 @@ class DisplayDriver:
         self.wr.on()
         self.cs.on()
 
+    def write_row(self, y, colors):
+        """Write an entire row of pixels at once"""
+        # Implementation depends on your display controller
+        # Example for ILI9341:
+        self.set_window(0, y, len(colors)-1, y)
+        self.write_data(colors)  # Assuming your controller can take a list of colors
+
 
 # Main usage
 if __name__ == "__main__":
