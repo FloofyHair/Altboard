@@ -28,6 +28,7 @@ class SettingsState(State):
             if self.current_option == 0: 
                 print("Creating UpdateSettingsState")
                 return UpdateSettingsState(self.display_driver, self.nvs)
+        
         self.display()
         self.previous_option = self.current_option
         return self

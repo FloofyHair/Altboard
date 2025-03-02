@@ -16,6 +16,10 @@ class PronoteState(State):
     def navigate(self, button_id: str) -> State:
         if button_id == "UP": self.current_option = (self.current_option - 1) % len(self.options)
         if button_id == "DOWN": self.current_option = (self.current_option + 1) % len(self.options)
+        if button_id == "LEFT": 
+            from states.main_menu import MainMenuState
+            for label in self.labels: label.erase(self.display_driver)
+            return MainMenuState(self.display_driver, self.nvs)
         self.display()
         self.previous_option = self.current_option
         return self

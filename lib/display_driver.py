@@ -12,17 +12,21 @@ class Label:
         self.visible = False
 
     def draw(self, display):
-        """Draw the label on the display."""
-        display.draw_text(self.x, self.y, self.text, self.color, self.bg_color, self.font_file)
+        """Draw the label on the display with the text color."""
+        for i, char in enumerate(self.text):
+            x_offset = self.x + i * 8  # Assuming font width is 8 pixels
+            display.draw_text(x_offset, self.y, char, self.color, self.font_file)
         self.visible = True
 
     def erase(self, display):
         """Erase the label by redrawing with background color."""
         if self.visible:
-            display.draw_text(self.x, self.y, self.text, self.bg_color, self.bg_color, self.font_file)
+            for i, char in enumerate(self.text):
+                x_offset = self.x + i * 8  # Assuming font width is 8 pixels
+                display.draw_text(x_offset, self.y, char, self.bg_color, self.font_file)
             self.visible = False
 
-    def update(self, display, new_text):
+    def set_text(self, display, new_text):
         """Update the text of the label efficiently."""
         max_len = max(len(self.text), len(new_text))
         for i in range(max_len):
@@ -32,11 +36,11 @@ class Label:
             if current_char != new_char:
                 x_offset = self.x + i * 8  # Assuming font width is 8 pixels
                 if current_char is not None:  # Erase the current character if it exists
-                    display.draw_text(x_offset, self.y, current_char, self.bg_color, self.bg_color, self.font_file)
+                    display.draw_text(x_offset, self.y, current_char, self.bg_color, self.font_file)
                 if new_char is not None:  # Draw the new character if it exists
-                    display.draw_text(x_offset, self.y, new_char, self.color, self.bg_color, self.font_file)
+                    display.draw_text(x_offset, self.y, new_char, self.color, self.font_file)
 
-        self.text = new_text
+        self.text = new_text  # Update the text variable
 
 class Picture:
     def __init__(self, x, y, width, height, image_data=None, color=0xFFFF, bg_color=0x0000):
@@ -76,7 +80,6 @@ class Picture:
                 for col_index in range(self.width):
                     display.draw_pixel(self.x + col_index, self.y + row_index, self.bg_color)
             self.visible = False
-
 
 class DisplayDriver:
     def __init__(self):
@@ -126,6 +129,8 @@ class DisplayDriver:
         self.cs.on()
 
     def fill_screen(self, color):
+        self.draw_line(0, 0, self.width - 1, self.height - 1, 0xFFFF, 1)
+        
         self.cs.off()
         self.write_9bit(0x2A, is_data=False)
         self.write_9bit(0x00)
@@ -152,19 +157,19 @@ class DisplayDriver:
             self.wr.on()
         self.cs.on()
 
-    def draw_text(self, x, y, text, color, bg_color, font_file='fonts/vga_8x8.bin', draw_bg=True):
+    def draw_text(self, x, y, text, color, font_file='fonts/vga_8x8.bin'):
         font_width = 8
         font_height = 8
         with open(font_file, 'rb') as f:
             for char_index, char in enumerate(text):
                 f.seek(ord(char) * font_height)
                 font_data = list(f.read(font_height))
-                for row, byte in enumerate(font_data):
+                for row in range(font_height):
+                    byte = font_data[row]
                     for col in range(8):
-                        pixel_color = color if byte & (1 << (7 - col)) else (bg_color if draw_bg else None)
-                        if pixel_color is not None:  # Skip drawing if no background is required
-                            self.draw_pixel(x + col + char_index * font_width, y + row, pixel_color)
-
+                        # Only draw the pixel if it is part of the character
+                        if byte & (1 << (7 - col)):
+                            self.draw_pixel(x + col + char_index * font_width, y + row, color)
 
     def draw_pixel(self, x, y, color):
         x, y = self.transform_coordinates(x, y)
@@ -200,6 +205,27 @@ class DisplayDriver:
         self.set_window(0, y, len(colors)-1, y)
         self.write_data(colors)  # Assuming your controller can take a list of colors
 
+    def draw_line(self, x1, y1, x2, y2, color, thickness):
+        """Draw a line from (x1, y1) to (x2, y2) with the specified color and thickness."""
+        # Bresenham's line algorithm
+        dx = abs(x2 - x1)
+        dy = abs(y2 - y1)
+        sx = 1 if x1 < x2 else -1
+        sy = 1 if y1 < y2 else -1
+        err = dx - dy
+
+        while True:
+            for i in range(thickness):
+                self.draw_pixel(x1 + i, y1, color)
+            if x1 == x2 and y1 == y2:
+                break
+            e2 = err * 2
+            if e2 > -dy:
+                err -= dy
+                x1 += sx
+            if e2 < dx:
+                err += dx
+                y1 += sy
 
 # Main usage
 if __name__ == "__main__":
@@ -212,6 +238,6 @@ if __name__ == "__main__":
     label = Label(10, 10, "Hello!", 0xFFFF, 0x0000)
     label.draw(display)
     time.sleep(2)
-    label.update(display, "Updated Text")
+    label.set_text(display, "Updated Text")
     time.sleep(2)
     label.erase(display)

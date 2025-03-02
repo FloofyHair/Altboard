@@ -25,9 +25,6 @@ class UpdateSettingsState(State):
         while not self.ap.active():
             pass
         
-        # Add a small delay to allow the AP to stabilize
-        time.sleep(2)  # Wait for 2 seconds
-        
         # Get and print AP details
         self.ip = self.ap.ifconfig()[0]  # Store the IP address
         print(f"\nAccess Point Started!")
@@ -44,7 +41,9 @@ class UpdateSettingsState(State):
         self.start_server()
         
         # Setup display
-        self.options = ["Back"]
+        self.options = ["Access Point Started",
+                        f"AP SSID: {self.AP_SSID}", 
+                        f"IP: {self.ip}"]
         self.labels = [Label(10, 10 + i * 20, f"  {option}", 0xFFFF, 0x0000) for i, option in enumerate(self.options)]
         self.current_option = 0
         self.previous_option = 0
@@ -128,27 +127,18 @@ class UpdateSettingsState(State):
             print("Web server stopped.")
 
     def navigate(self, button_id: str) -> State:
-        if (button_id == "RIGHT" or button_id == "LEFT") and self.current_option == 0:  # Back option selected
-            # Clean up before returning to settings
-            self.ap.active(False)  # Turn off the access point
-            self.stop_server()  # Stop the web server
+        if button_id == "UP": self.current_option = (self.current_option - 1) % len(self.options)
+        if button_id == "DOWN": self.current_option = (self.current_option + 1) % len(self.options)
+        if (button_id == "LEFT"):
+            self.ap.active(False)
+            self.stop_server()
             [label.erase(self.display_driver) for label in self.labels]
-            # Import SettingsState here to avoid circular import
             from states.settings import SettingsState
             return SettingsState(self.display_driver, self.nvs)  # Return to SettingsState
         
-        if button_id == "UP":
-            self.current_option = (self.current_option - 1) % len(self.options)
-        if button_id == "DOWN":
-            self.current_option = (self.current_option + 1) % len(self.options)
-            
         self.display()
+        self.previous_option = self.current_option
         return self
     
     def display(self):
-        """Update the display with current options and AP details."""
         self.update_display_options(self.labels, self.options, self.current_option, self.previous_option, self.display_driver)
-        
-        # Display the AP SSID and IP address
-        self.display_driver.draw_text(10, 100, f"AP SSID: {self.AP_SSID}", 0xFFFF)  # Adjust Y position as needed
-        self.display_driver.draw_text(10, 120, f"IP Address: {self.ip}", 0xFFFF)  # Adjust Y position as needed
