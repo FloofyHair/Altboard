@@ -56,4 +56,12 @@ class WiFiManager:
 
         if not self.thread_active:
             self.thread_active = True
-            _thread.start_new_thread(wifi_thread, ()) 
+            _thread.start_new_thread(wifi_thread, ())
+
+def check_wifi_connection():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    if wlan.isconnected():
+        print("Wi-Fi is connected.")
+    else:
+        print("Wi-Fi is not connected.") 

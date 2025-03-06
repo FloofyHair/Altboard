@@ -99,15 +99,13 @@ def get_settings_html(network_options, nvs):
           </div>
 
           <div id="ssid">
-            <label for="networks">Available Networks:</label>
-            <select id="networks" name="networks">
-              {network_options}
-            </select>
+            <label for="networks">Network Name:</label>
+            <input type="text" id="networks" name="networks" placeholder="Enter SSID" required value="{saved_ssid}">
           </div>
 
           <div id="password">
             <label for="password">Password:</label>
-            <input type="password" id="password" name="password" value="{saved_password}" />
+            <input type="password" id="password" name="password" placeholder="Enter Password" required value="{saved_password}" />
           </div>
 
           <div class="line-container">

@@ -7,6 +7,8 @@ from states.base import State
 from lib.settings_template import get_settings_html, get_updated_html  # Import the HTML template function
 import time
 
+DEBUG = True
+
 class UpdateSettingsState(State):
     def __init__(self, display: DisplayDriver, nvs: NVSManager):
         self.display_driver = display
@@ -115,6 +117,13 @@ class UpdateSettingsState(State):
         wlan = network.WLAN(network.STA_IF)
         wlan.active(True)
         networks = wlan.scan()
+        
+        # Debug: Print the networks found
+        if DEBUG:
+            print("Available networks:")
+            for net in networks:
+                print(f"SSID: {net[0].decode()}, Signal Strength: {net[3]}, BSSID: {net[1]}")
+
         options = ''.join(f'<option value="{net[0].decode()}">{net[0].decode()}</option>' for net in networks)
         return options
 
